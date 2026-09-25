@@ -426,8 +426,6 @@ T3MarkdownOutsideTapCoordinatorForWindow(UIWindow *window)
       continue;
     }
 
-    // Web links carry their real URL so UIKit builds its standard link menu
-    // and preview. Custom menus use a placeholder URL that names the run.
     NSURL *link = [textChild hasContextMenu]
         ? [NSURL URLWithString:
               [NSString stringWithFormat:@"t3-markdown-run://%ld", (long)textChild.tag]]
@@ -781,7 +779,6 @@ T3MarkdownOutsideTapCoordinatorForWindow(UIWindow *window)
                defaultAction:(UIAction *)defaultAction API_AVAILABLE(ios(17.0))
 {
   T3MarkdownTextRun *child = [self childForCharacterRange:textItem.range];
-  // Web link taps go to the app too, which opens media and files in place.
   if (![child hasContextMenu] && child.linkURL == nil && !child.contextChipInteractive) {
     return defaultAction;
   }
