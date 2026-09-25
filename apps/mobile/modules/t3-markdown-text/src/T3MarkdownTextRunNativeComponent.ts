@@ -45,7 +45,6 @@ interface NativeProps extends ViewProps {
   textAlign?: CodegenTypes.WithDefault<TextAlign, "auto">;
   shadowRadius?: CodegenTypes.WithDefault<CodegenTypes.Float, 0>;
   contextMenuConfig?: string;
-  /** A web URL gets UIKit's own link menu and preview on long-press. */
   linkUrl?: string;
   onPress?: CodegenTypes.BubblingEventHandler<TargetedEvent>;
   onLongPress?: CodegenTypes.BubblingEventHandler<TargetedEvent>;
