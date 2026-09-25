@@ -421,13 +421,17 @@ T3MarkdownOutsideTapCoordinatorForWindow(UIWindow *window)
     T3MarkdownTextRun *textChild = (T3MarkdownTextRun *)child;
     const NSRange runRange = NSMakeRange(runLocation, textChild.text.length);
     runLocation = NSMaxRange(runRange);
-    if (![textChild hasContextMenu] || runRange.length == 0 ||
+    if ((![textChild hasContextMenu] && textChild.linkURL == nil) || runRange.length == 0 ||
         NSMaxRange(runRange) > convertedAttrString.length) {
       continue;
     }
 
-    NSURL *link = [NSURL URLWithString:
-        [NSString stringWithFormat:@"t3-markdown-run://%ld", (long)textChild.tag]];
+    // Web links carry their real URL so UIKit builds its standard link menu
+    // and preview. Custom menus use a placeholder URL that names the run.
+    NSURL *link = [textChild hasContextMenu]
+        ? [NSURL URLWithString:
+              [NSString stringWithFormat:@"t3-markdown-run://%ld", (long)textChild.tag]]
+        : textChild.linkURL;
     if (link != nil) {
       // A glyph must not be both a link and an attachment. UIKit caches them as
       // different text-item classes and can send `attachment` to a cached link
@@ -671,7 +675,7 @@ T3MarkdownOutsideTapCoordinatorForWindow(UIWindow *window)
 
   const auto location = [self getLocationOfPress:gestureRecognizer];
   const auto child = [self getTouchChild:location];
-  return ![child hasContextMenu];
+  return ![child hasContextMenu] && child.linkURL == nil;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
@@ -777,7 +781,8 @@ T3MarkdownOutsideTapCoordinatorForWindow(UIWindow *window)
                defaultAction:(UIAction *)defaultAction API_AVAILABLE(ios(17.0))
 {
   T3MarkdownTextRun *child = [self childForCharacterRange:textItem.range];
-  if (![child hasContextMenu] && !child.contextChipInteractive) {
+  // Web link taps go to the app too, which opens media and files in place.
+  if (![child hasContextMenu] && child.linkURL == nil && !child.contextChipInteractive) {
     return defaultAction;
   }
 
