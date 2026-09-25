@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy, nullable) NSString *text;
 @property (nonatomic, assign) BOOL contextChipInteractive;
+/** Set for web links, which use UIKit's own link menu instead of a custom one. */
+@property (nonatomic, strong, readonly, nullable) NSURL *linkURL;
 
 - (nullable UIMenu *)contextMenu;
 - (BOOL)hasContextMenu;
