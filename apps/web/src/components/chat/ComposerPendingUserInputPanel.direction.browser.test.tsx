@@ -53,4 +53,7 @@ it("gives Hebrew question text its own direction without flipping the option row
   await expect
     .element(screen.getByRole("button", { name: /React Server/ }))
     .toHaveStyle({ direction: "ltr" });
+
+  await screen.getByTitle("Hide the question and its options").click();
+  await expect.element(text("איך לבצע את המיגרציה?")).toHaveStyle({ direction: "rtl" });
 });
