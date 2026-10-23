@@ -3,7 +3,7 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { type EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-import { textDirection, type TextDirection } from "@t3tools/shared/textDirection";
+import { textDirection, type TextDirection } from "~/textDirection";
 
 interface ComposerTextDirections {
   /** One entry per top-level block. */

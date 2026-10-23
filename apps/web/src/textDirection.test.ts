@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { textDirection } from "./textDirection.ts";
+import { textDirection } from "./textDirection";
 
 describe("textDirection", () => {
   it.each([

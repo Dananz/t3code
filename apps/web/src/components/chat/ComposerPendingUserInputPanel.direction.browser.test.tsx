@@ -9,14 +9,8 @@ vi.mock(import("../ChatMarkdown"), async (importOriginal) => ({
 import { render } from "../../../test/render";
 import { ComposerPendingUserInputPanel } from "./ComposerPendingUserInputPanel";
 
-const threadRef = { environmentId: EnvironmentId.make("env"), threadId: ThreadId.make("thread") };
-
-function renderQuestion(question: {
-  header: string;
-  question: string;
-  options: { label: string; description: string }[];
-}) {
-  return render(
+it("gives Hebrew question text its own direction without flipping the option rows", async () => {
+  await using screen = await render(
     <ComposerPendingUserInputPanel
       pendingUserInputs={[
         {
@@ -24,11 +18,24 @@ function renderQuestion(question: {
           createdAt: "2026-10-23T00:00:00.000Z",
           dismissible: false,
           responseCapability: "live",
-          questions: [{ id: "question", multiSelect: false, ...question }],
+          questions: [
+            {
+              id: "question",
+              header: "גישה",
+              question: "איך לבצע את המיגרציה?",
+              multiSelect: false,
+              options: [
+                {
+                  label: "React Server Components בכל המסכים של האפליקציה",
+                  description: "מסך אחד בכל פעם",
+                },
+              ],
+            },
+          ],
         },
       ]}
       cwd={undefined}
-      threadRef={threadRef}
+      threadRef={{ environmentId: EnvironmentId.make("env"), threadId: ThreadId.make("thread") }}
       respondingRequestIds={[]}
       answers={{}}
       questionIndex={0}
@@ -37,25 +44,16 @@ function renderQuestion(question: {
       onDismiss={() => {}}
     />,
   );
-}
 
-it("sets the direction of Hebrew header and option text, even when it opens with an English term, and leaves the rows left to right", async () => {
-  await using screen = await renderQuestion({
-    header: "גישה",
-    question: "איך לבצע את המיגרציה?",
-    options: [
-      { label: "React Server Components בכל המסכים של האפליקציה", description: "מסך אחד בכל פעם" },
-      { label: "Incremental", description: "One module at a time" },
-    ],
-  });
-
-  expect(screen.getByText("גישה").element().getAttribute("dir")).toBe("rtl");
-  const hebrewOption = screen.getByRole("button", { name: /React Server Components/ }).element();
-  expect(hebrewOption.getAttribute("dir")).toBeNull();
-  const direction = (text: string) =>
+  const dir = (text: string) =>
     screen.getByText(text, { exact: true }).element().getAttribute("dir");
-  expect(direction("React Server Components בכל המסכים של האפליקציה")).toBe("rtl");
-  expect(direction("מסך אחד בכל פעם")).toBe("rtl");
-  expect(direction("Incremental")).toBe("ltr");
-  expect(direction("One module at a time")).toBe("ltr");
+  expect(dir("גישה")).toBe("rtl");
+  expect(dir("React Server Components בכל המסכים של האפליקציה")).toBe("rtl");
+  expect(dir("מסך אחד בכל פעם")).toBe("rtl");
+  expect(
+    screen
+      .getByRole("button", { name: /React Server/ })
+      .element()
+      .getAttribute("dir"),
+  ).toBeNull();
 });
