@@ -39,7 +39,7 @@ function renderQuestion(question: {
   );
 }
 
-it("lays out Hebrew header and options right to left, even when they open with an English term", async () => {
+it("sets the direction of Hebrew header and option text, even when it opens with an English term, and leaves the rows left to right", async () => {
   await using screen = await renderQuestion({
     header: "גישה",
     question: "איך לבצע את המיגרציה?",
@@ -51,7 +51,11 @@ it("lays out Hebrew header and options right to left, even when they open with a
 
   expect(screen.getByText("גישה").element().getAttribute("dir")).toBe("rtl");
   const hebrewOption = screen.getByRole("button", { name: /React Server Components/ }).element();
-  const englishOption = screen.getByRole("button", { name: /Incremental/ }).element();
-  expect(hebrewOption.getAttribute("dir")).toBe("rtl");
-  expect(englishOption.getAttribute("dir")).toBe("ltr");
+  expect(hebrewOption.getAttribute("dir")).toBeNull();
+  const direction = (text: string) =>
+    screen.getByText(text, { exact: true }).element().getAttribute("dir");
+  expect(direction("React Server Components בכל המסכים של האפליקציה")).toBe("rtl");
+  expect(direction("מסך אחד בכל פעם")).toBe("rtl");
+  expect(direction("Incremental")).toBe("ltr");
+  expect(direction("One module at a time")).toBe("ltr");
 });

@@ -270,9 +270,16 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
                 const content = (
                   <>
                     <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                      <span className="text-sm font-medium">{option.label}</span>
+                      <span className="text-sm font-medium" dir={textDirection(option.label)}>
+                        {option.label}
+                      </span>
                       {option.description && option.description !== option.label ? (
-                        <span className="text-secondary-label text-2xs">{option.description}</span>
+                        <span
+                          className="text-secondary-label text-2xs"
+                          dir={textDirection(option.description)}
+                        >
+                          {option.description}
+                        </span>
                       ) : null}
                     </div>
                     {isSelected ? (
@@ -297,7 +304,6 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
                       handleOptionSelection(activeQuestion.id, optionValue);
                     }}
                     className={className}
-                    dir={textDirection(option.label)}
                   >
                     {content}
                   </button>
