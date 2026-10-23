@@ -1,8 +1,7 @@
 import { EnvironmentId, RuntimeRequestId, ThreadId } from "@t3tools/contracts";
 import { expect, it, vi } from "vite-plus/test";
 
-vi.mock(import("../ChatMarkdown"), async (importOriginal) => ({
-  ...(await importOriginal()),
+vi.mock(import("../ChatMarkdown"), () => ({
   default: (({ text }: { text: string }) => <p>{text}</p>) as never,
 }));
 
@@ -45,15 +44,13 @@ it("gives Hebrew question text its own direction without flipping the option row
     />,
   );
 
-  const dir = (text: string) =>
-    screen.getByText(text, { exact: true }).element().getAttribute("dir");
-  expect(dir("גישה")).toBe("rtl");
-  expect(dir("React Server Components בכל המסכים של האפליקציה")).toBe("rtl");
-  expect(dir("מסך אחד בכל פעם")).toBe("rtl");
-  expect(
-    screen
-      .getByRole("button", { name: /React Server/ })
-      .element()
-      .getAttribute("dir"),
-  ).toBeNull();
+  const text = (value: string) => screen.getByText(value, { exact: true });
+  await expect.element(text("גישה")).toHaveStyle({ direction: "rtl" });
+  await expect
+    .element(text("React Server Components בכל המסכים של האפליקציה"))
+    .toHaveStyle({ direction: "rtl" });
+  await expect.element(text("מסך אחד בכל פעם")).toHaveStyle({ direction: "rtl" });
+  await expect
+    .element(screen.getByRole("button", { name: /React Server/ }))
+    .toHaveStyle({ direction: "ltr" });
 });
