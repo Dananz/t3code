@@ -1,4 +1,4 @@
-import { textDirection } from "~/textDirection";
+import { textDirection } from "@t3tools/shared/textDirection";
 
 type HastNode = {
   type?: string;
