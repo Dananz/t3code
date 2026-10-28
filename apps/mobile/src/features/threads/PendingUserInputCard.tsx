@@ -1,9 +1,9 @@
 import { Button } from "../../components/ui/Button";
 import { QuestionAttachments } from "./QuestionAttachments";
-import type { RuntimeRequestId } from "@t3tools/contracts";
+import type { EnvironmentId, RuntimeRequestId } from "@t3tools/contracts";
 import type { ThreadUserInputQuestion } from "@t3tools/client-runtime/state/thread-requests";
 import { textDirection, type TextDirection } from "@t3tools/shared/textDirection";
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import { Platform, Pressable, ScrollView, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
   Easing,
@@ -24,6 +24,7 @@ import { cn } from "../../lib/cn";
 import { SelectableMarkdownText } from "../../native/SelectableMarkdownText";
 import { useOpenPullRequest } from "../../native/useOpenPullRequest";
 import { useMarkdownPreviewStyles } from "../files/FileMarkdownPreview";
+import { useLiveThreadLinkLabels } from "../../state/entities";
 import {
   isPendingUserInputOptionSelected,
   type PendingUserInput,
@@ -31,6 +32,7 @@ import {
 } from "../../lib/threadActivity";
 
 export interface PendingUserInputCardProps {
+  readonly environmentId: EnvironmentId;
   readonly canOperateThread: boolean;
   readonly pendingUserInput: PendingUserInput;
   readonly maxHeight: DerivedValue<number>;
@@ -70,15 +72,17 @@ function proseDirectionStyle(text: string, setDirection: TextDirection | undefin
 
 function QuestionText(props: {
   readonly markdown: string;
+  readonly environmentId: EnvironmentId;
   readonly setDirection: TextDirection | undefined;
 }) {
   const styles = useMarkdownPreviewStyles();
+  const markdown = useLiveThreadLinkLabels(props.markdown, props.environmentId);
   const openLink = useOpenPullRequest();
   return (
     <SelectableMarkdownText
-      markdown={props.markdown}
+      markdown={markdown}
       textStyle={styles.nativeTextStyle}
-      writingDirection={textDirection(props.markdown)}
+      writingDirection={textDirection(markdown)}
       textAlign={props.setDirection === "rtl" ? "right" : "left"}
       onLinkPress={(href) => void openLink(href)}
     />
@@ -104,29 +108,23 @@ export function PendingUserInputCard(props: PendingUserInputCardProps) {
   const barHeightRef = useRef(0);
   const cardHeightRef = useRef(0);
   const cardHeight = useSharedValue(0);
-  const notifyCoverage = useCallback(() => {
+  const notifyCoverage = () => {
     if (!cardCoverage) {
       return;
     }
     // The card resizes with the keyboard every frame, so easing each sample would leave the
     // feed inset and floating controls trailing it.
     cardCoverage.set(Math.max(0, cardHeightRef.current - barHeightRef.current));
-  }, [cardCoverage]);
-  const handleBarLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      barHeightRef.current = event.nativeEvent.layout.height;
-      notifyCoverage();
-    },
-    [notifyCoverage],
-  );
-  const handleCardLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      cardHeightRef.current = event.nativeEvent.layout.height;
-      cardHeight.set(event.nativeEvent.layout.height);
-      notifyCoverage();
-    },
-    [cardHeight, notifyCoverage],
-  );
+  };
+  const handleBarLayout = (event: LayoutChangeEvent) => {
+    barHeightRef.current = event.nativeEvent.layout.height;
+    notifyCoverage();
+  };
+  const handleCardLayout = (event: LayoutChangeEvent) => {
+    cardHeightRef.current = event.nativeEvent.layout.height;
+    cardHeight.set(event.nativeEvent.layout.height);
+    notifyCoverage();
+  };
   const cardProgress = props.cardProgress;
   const maxHeight = props.maxHeight;
   const cardAnimatedStyle = useAnimatedStyle(() => {
@@ -249,7 +247,11 @@ export function PendingUserInputCard(props: PendingUserInputCardProps) {
               >
                 {question.header}
               </Text>
-              <QuestionText markdown={question.question} setDirection={setDirection} />
+              <QuestionText
+                markdown={question.question}
+                environmentId={props.environmentId}
+                setDirection={setDirection}
+              />
               <View className="gap-2">
                 {question.options.map((option) => {
                   const optionValue = option.value ?? option.label.trim();
@@ -299,6 +301,7 @@ export function PendingUserInputCard(props: PendingUserInputCardProps) {
               </View>
               {question.allowCustomAnswer !== false ? (
                 <QuestionAttachments
+                  key={`${props.pendingUserInput.requestId}:${question.id}`}
                   requestId={props.pendingUserInput.requestId}
                   question={question}
                   questions={props.pendingUserInput.questions}
