@@ -81,6 +81,12 @@ import { ThreadSearchMatchExcerpt } from "./thread-search-match";
 import { useScaledTextRole } from "../settings/appearance/useScaledTextRole";
 import { PullRequestGlyph } from "../pull-requests/pullRequestGlyphs";
 import { pullRequestStatus } from "../pull-requests/pullRequestStatus";
+import { textDirection } from "@t3tools/shared/textDirection";
+
+function textDirectionStyle(text: string) {
+  const direction = textDirection(text);
+  return direction ? { direction, writingDirection: direction } : undefined;
+}
 
 interface StatusLabel {
   readonly label: string;
@@ -465,6 +471,7 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
           sidebarPane && "text-drawer-foreground",
         )}
         numberOfLines={1}
+        style={textDirectionStyle(pendingTask.title)}
       >
         {pendingTask.title}
       </Text>
@@ -1081,6 +1088,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               : rowAppearance.foregroundClassName,
           )}
           numberOfLines={2}
+          style={textDirectionStyle(thread.title)}
         >
           {thread.title}
         </Text>

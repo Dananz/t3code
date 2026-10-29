@@ -4,6 +4,7 @@ import {
   type SearchMatchHint,
   type SearchRange,
 } from "@t3tools/shared/paletteSearch";
+import { textDirection } from "~/textDirection";
 
 /** `text` with each range in semibold foreground. */
 function HighlightedSearchText(props: { text: string; ranges: ReadonlyArray<SearchRange> }) {
@@ -22,8 +23,13 @@ function HighlightedSearchText(props: { text: string; ranges: ReadonlyArray<Sear
 /** Why a row matched when its title does not show it: the field and its match. */
 export function SearchMatchHintLine(props: { hint: SearchMatchHint }) {
   return (
-    <span className="truncate text-xs text-muted-foreground/85">
-      <span className="text-muted-foreground/70">{props.hint.label}:</span>{" "}
+    <span
+      className="truncate text-xs text-muted-foreground/85"
+      dir={textDirection(props.hint.text)}
+    >
+      <span className="text-muted-foreground/70" dir="ltr">
+        {props.hint.label}:
+      </span>{" "}
       <HighlightedSearchText text={props.hint.text} ranges={props.hint.ranges} />
     </span>
   );
@@ -38,8 +44,11 @@ export function ThreadSearchMatchExcerpt(props: {
 }) {
   const isUser = props.match.source === "user";
   return (
-    <span className="truncate text-xs text-muted-foreground/85">
-      <span className={isUser ? "text-info-foreground" : "text-success-foreground"}>
+    <span
+      className="truncate text-xs text-muted-foreground/85"
+      dir={textDirection(props.match.snippet)}
+    >
+      <span className={isUser ? "text-info-foreground" : "text-success-foreground"} dir="ltr">
         {isUser ? "You:" : "Agent:"}
       </span>{" "}
       <HighlightedSearchText

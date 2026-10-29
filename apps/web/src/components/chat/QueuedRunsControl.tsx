@@ -35,6 +35,7 @@ import type { TimestampFormat } from "@t3tools/contracts/settings";
 import { GuestMessageName } from "./guestMessageStyle";
 import { TimelineRowTimestamp } from "./TimelineRowParts";
 import { FoldedMessageHeader, useScheduledTaskTitle } from "./TimelineUserMessageRow";
+import { markdownProseDirection } from "~/textDirection";
 
 export interface EditQueuedRunRequest {
   readonly runId: RunId;
@@ -486,7 +487,12 @@ function QueuedMessage(props: {
             ) : null}
             {/* In full, like a sent turn: a queued message is read before it is sent. */}
             {props.previewText ? (
-              <p className="whitespace-pre-wrap wrap-anywhere">{props.previewText}</p>
+              <p
+                className="whitespace-pre-wrap wrap-anywhere"
+                dir={markdownProseDirection(props.previewText)}
+              >
+                {props.previewText}
+              </p>
             ) : null}
           </div>
         ) : null}
