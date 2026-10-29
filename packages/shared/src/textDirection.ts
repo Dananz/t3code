@@ -55,10 +55,54 @@ export function markdownCodeParts(markdown: string) {
   return parts;
 }
 
-export function markdownProseDirection(markdown: string): TextDirection | undefined {
-  const prose = markdownCodeParts(markdown)
+function proseDirection(parts: ReadonlyArray<{ text: string; code: boolean }>) {
+  const prose = parts
     .filter((part) => !part.code)
     .map((part) => part.text)
     .join(" ");
   return textDirection(prose.replace(/https?:\/\/\S+/g, " "));
+}
+
+export function markdownProseDirection(...fields: ReadonlyArray<string>) {
+  return proseDirection(fields.flatMap(markdownCodeParts));
+}
+
+export function markdownPreview(markdown: string, maxChars: number) {
+  let previousSpace = false;
+  const normalized = [];
+  for (const part of markdownCodeParts(markdown)) {
+    let text = part.text.replace(/\s+/g, " ");
+    if (previousSpace && text.startsWith(" ")) text = text.slice(1);
+    if (text.length > 0) previousSpace = text.endsWith(" ");
+    normalized.push({ ...part, text });
+  }
+  const length = normalized.reduce((total, part) => total + part.text.length, 0);
+  const parts = [];
+  let rendered = 0;
+  for (const part of normalized) {
+    if (rendered >= maxChars) break;
+    let text = part.text.slice(0, maxChars - rendered);
+    rendered += text.length;
+    if (rendered === maxChars && length > maxChars) text += "…";
+    parts.push({ ...part, text });
+  }
+  return { parts, direction: proseDirection(parts) };
+}
+
+export function markdownWithDirection(markdown: string, direction: TextDirection | undefined) {
+  if (!direction) return markdown;
+  const offsets: number[] = [];
+  const visit = (node: Root | RootContent): void => {
+    if (node.type === "paragraph" || node.type === "heading") {
+      const offset = node.children[0]?.position?.start.offset;
+      if (offset !== undefined) offsets.push(offset);
+    }
+    if ("children" in node) node.children.forEach(visit);
+  };
+  visit(markdownParser.parse(markdown));
+  const mark = direction === "rtl" ? "\u200f" : "\u200e";
+  for (const offset of offsets.reverse()) {
+    markdown = markdown.slice(0, offset) + mark + markdown.slice(offset);
+  }
+  return markdown;
 }

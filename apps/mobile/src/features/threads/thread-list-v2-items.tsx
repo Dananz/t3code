@@ -31,7 +31,7 @@ import { canSnooze } from "@t3tools/client-runtime/state/thread-settled";
 import { threadChipCopyTarget } from "@t3tools/client-runtime/thread-reference";
 import type { MenuAction } from "@react-native-menu/menu";
 import { memo, useCallback, useMemo, useState, type ComponentProps } from "react";
-import { Platform, Pressable, useWindowDimensions, View, type TextStyle } from "react-native";
+import { Pressable, useWindowDimensions, View, type TextStyle } from "react-native";
 import type { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 
 import type { ThreadListProvider } from "../../state/thread-list-environments";
@@ -82,6 +82,7 @@ import { useScaledTextRole } from "../settings/appearance/useScaledTextRole";
 import { PullRequestGlyph } from "../pull-requests/pullRequestGlyphs";
 import { pullRequestStatus } from "../pull-requests/pullRequestStatus";
 import { textDirection } from "@t3tools/shared/textDirection";
+import { directionalText } from "../../lib/directionalText";
 
 function textDirectionStyle(text: string) {
   return {
@@ -89,14 +90,6 @@ function textDirectionStyle(text: string) {
     writingDirection: textDirection(text),
     textAlign: "left",
   } satisfies TextStyle;
-}
-
-function directionalTitle(text: string) {
-  const direction = textDirection(text);
-  // Android ignores writingDirection; a render-only mark sets its first-strong paragraph direction.
-  return Platform.OS === "android" && direction
-    ? `${direction === "rtl" ? "\u200f" : "\u200e"}${text}`
-    : text;
 }
 
 interface StatusLabel {
@@ -484,7 +477,7 @@ export const ThreadListV2PendingRow = memo(function ThreadListV2PendingRow(props
         numberOfLines={1}
         style={textDirectionStyle(pendingTask.title)}
       >
-        {directionalTitle(pendingTask.title)}
+        {directionalText(pendingTask.title)}
       </Text>
       {branch || props.environmentLabel ? (
         <View className="mt-1 flex-row items-center gap-1">
@@ -1101,7 +1094,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
           numberOfLines={2}
           style={textDirectionStyle(thread.title)}
         >
-          {directionalTitle(thread.title)}
+          {directionalText(thread.title)}
         </Text>
         <View className="flex-row items-center gap-1.5" style={{ minHeight: titleLineHeight }}>
           {props.hasQueuedMessages ? <QueuedMessageIcon selected={selected} /> : null}
@@ -1393,7 +1386,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               numberOfLines={1}
               style={textDirectionStyle(thread.title)}
             >
-              {directionalTitle(thread.title)}
+              {directionalText(thread.title)}
             </Text>
             {props.searchMatch ? (
               <ThreadSearchMatchExcerpt

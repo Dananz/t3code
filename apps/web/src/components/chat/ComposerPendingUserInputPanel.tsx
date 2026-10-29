@@ -179,13 +179,11 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
   }
 
   const promptDirection = markdownProseDirection(
-    prompt.questions
-      .flatMap((question) => [
-        question.header,
-        question.question,
-        ...question.options.flatMap((option) => [option.label, option.description ?? ""]),
-      ])
-      .join(" "),
+    ...prompt.questions.flatMap((question) => [
+      question.header,
+      question.question,
+      ...question.options.flatMap((option) => [option.label, option.description ?? ""]),
+    ]),
   );
   const questionTextAlign = promptDirection === "rtl" ? "text-right" : "text-left";
 

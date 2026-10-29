@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { markdownCodeParts, markdownProseDirection, textDirection } from "./textDirection";
+import {
+  markdownCodeParts,
+  markdownPreview,
+  markdownProseDirection,
+  markdownWithDirection,
+  textDirection,
+} from "./textDirection";
 
 describe("textDirection", () => {
   it.each([
@@ -68,6 +74,27 @@ describe("markdownProseDirection", () => {
   it("leaves markdown without prose letters to its surroundings", () => {
     expect(markdownProseDirection("```\nconst a = 1;\n```")).toBeUndefined();
   });
+
+  it("keeps unclosed fences inside their own question field", () => {
+    expect(markdownProseDirection("Question\n```ts\nx", "בחר באפשרות הזאת בבקשה")).toBe("rtl");
+  });
+});
+
+it("reads only the visible preview prose without losing truncated code boundaries", () => {
+  const text = `שלום עולם בבקשה תבדוק עכשיו\n\`run({ items: [1, 2] })\` ${"hidden English words ".repeat(20)}`;
+  const preview = markdownPreview(text, 42);
+  expect(preview.direction).toBe("rtl");
+  expect(preview.parts.map((part) => part.text).join("")).toBe(
+    text.replace(/\s+/g, " ").slice(0, 42) + "…",
+  );
+  expect(preview.parts.at(-1)?.code).toBe(true);
+});
+
+it("seeds native paragraphs without changing Markdown block structure or code", () => {
+  const markdown = "# React עדכון\n\n- React שינוי\n\n> English ציטוט\n\n```ts\nfoo()\n```";
+  expect(markdownWithDirection(markdown, "rtl")).toBe(
+    "# \u200fReact עדכון\n\n- \u200fReact שינוי\n\n> \u200fEnglish ציטוט\n\n```ts\nfoo()\n```",
+  );
 });
 
 it("preserves literal markdown while separating code from prose", () => {
