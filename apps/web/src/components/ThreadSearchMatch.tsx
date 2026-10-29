@@ -25,9 +25,9 @@ export function SearchMatchHintLine(props: { hint: SearchMatchHint }) {
   return (
     <span className="flex min-w-0 items-baseline gap-1 text-xs text-muted-foreground/85" dir="ltr">
       <span className="shrink-0 text-muted-foreground/70">{props.hint.label}:</span>
-      <span className="min-w-0 flex-1 truncate text-start" dir={textDirection(props.hint.text)}>
+      <bdi className="min-w-0 flex-1 truncate text-left" dir={textDirection(props.hint.text)}>
         <HighlightedSearchText text={props.hint.text} ranges={props.hint.ranges} />
-      </span>
+      </bdi>
     </span>
   );
 }
@@ -45,12 +45,12 @@ export function ThreadSearchMatchExcerpt(props: {
       <span className={`shrink-0 ${isUser ? "text-info-foreground" : "text-success-foreground"}`}>
         {isUser ? "You:" : "Agent:"}
       </span>
-      <span className="min-w-0 flex-1 truncate text-start" dir={textDirection(props.match.snippet)}>
+      <bdi className="min-w-0 flex-1 truncate text-left" dir={textDirection(props.match.snippet)}>
         <HighlightedSearchText
           text={props.match.snippet}
           ranges={findSearchTokenRanges(props.match.snippet, props.match.query)}
         />
-      </span>
+      </bdi>
     </span>
   );
 }
