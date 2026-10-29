@@ -1344,8 +1344,7 @@ const CHAT_MARKDOWN_COMPONENTS = {
         <code
           {...props}
           dir="ltr"
-          style={{ unicodeBidi: "isolate" }}
-          className={className}
+          className={cn("[unicode-bidi:isolate]", className)}
           onDoubleClick={selectInlineCode}
         >
           {children}
