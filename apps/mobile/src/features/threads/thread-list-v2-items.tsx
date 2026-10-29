@@ -31,7 +31,7 @@ import { canSnooze } from "@t3tools/client-runtime/state/thread-settled";
 import { threadChipCopyTarget } from "@t3tools/client-runtime/thread-reference";
 import type { MenuAction } from "@react-native-menu/menu";
 import { memo, useCallback, useMemo, useState, type ComponentProps } from "react";
-import { Pressable, useWindowDimensions, View } from "react-native";
+import { Pressable, useWindowDimensions, View, type TextStyle } from "react-native";
 import type { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
 
 import type { ThreadListProvider } from "../../state/thread-list-environments";
@@ -84,8 +84,11 @@ import { pullRequestStatus } from "../pull-requests/pullRequestStatus";
 import { textDirection } from "@t3tools/shared/textDirection";
 
 function textDirectionStyle(text: string) {
-  const direction = textDirection(text);
-  return direction ? { direction, writingDirection: direction } : undefined;
+  return {
+    direction: "ltr",
+    writingDirection: textDirection(text),
+    textAlign: "left",
+  } satisfies TextStyle;
 }
 
 interface StatusLabel {
