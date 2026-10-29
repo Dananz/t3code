@@ -1,3 +1,7 @@
+import type { Root, RootContent } from "mdast";
+import remarkParse from "remark-parse";
+import { unified } from "unified";
+
 export type TextDirection = "ltr" | "rtl";
 
 // Hebrew through Arabic Extended-A, their presentation forms, and the
@@ -25,9 +29,36 @@ export function textDirection(text: string): TextDirection | undefined {
   return rtlWords > ltrWords ? "rtl" : "ltr";
 }
 
-const MARKDOWN_CODE_OR_URL =
-  /(`{3,}|~{3,})[\s\S]*?(?:\1|$)|(`{1,2})(?!`)[\s\S]*?(?<!`)\2(?!`)|https?:\/\/\S+/g;
+const markdownParser = unified().use(remarkParse).freeze();
+
+export function markdownCodeParts(markdown: string) {
+  const parts: Array<{ text: string; code: boolean; start: number }> = [];
+  let offset = 0;
+  const visit = (node: Root | RootContent): void => {
+    if (node.type === "code" || node.type === "inlineCode") {
+      const start = node.position?.start.offset;
+      const end = node.position?.end.offset;
+      if (start === undefined || end === undefined) return;
+      if (start > offset) {
+        parts.push({ text: markdown.slice(offset, start), code: false, start: offset });
+      }
+      parts.push({ text: markdown.slice(start, end), code: true, start });
+      offset = end;
+    } else if ("children" in node) {
+      node.children.forEach(visit);
+    }
+  };
+  visit(markdownParser.parse(markdown));
+  if (offset < markdown.length) {
+    parts.push({ text: markdown.slice(offset), code: false, start: offset });
+  }
+  return parts;
+}
 
 export function markdownProseDirection(markdown: string): TextDirection | undefined {
-  return textDirection(markdown.replace(MARKDOWN_CODE_OR_URL, " "));
+  const prose = markdownCodeParts(markdown)
+    .filter((part) => !part.code)
+    .map((part) => part.text)
+    .join(" ");
+  return textDirection(prose.replace(/https?:\/\/\S+/g, " "));
 }

@@ -1383,6 +1383,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
                   : rowAppearance.mutedForegroundClassName,
               )}
               numberOfLines={1}
+              style={textDirectionStyle(thread.title)}
             >
               {thread.title}
             </Text>

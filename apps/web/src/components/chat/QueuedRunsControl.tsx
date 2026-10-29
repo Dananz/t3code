@@ -36,6 +36,7 @@ import { GuestMessageName } from "./guestMessageStyle";
 import { TimelineRowTimestamp } from "./TimelineRowParts";
 import { FoldedMessageHeader, useScheduledTaskTitle } from "./TimelineUserMessageRow";
 import { markdownProseDirection } from "~/textDirection";
+import { BidiMarkdownText } from "./BidiMarkdownText";
 
 export interface EditQueuedRunRequest {
   readonly runId: RunId;
@@ -491,7 +492,7 @@ function QueuedMessage(props: {
                 className="whitespace-pre-wrap wrap-anywhere"
                 dir={markdownProseDirection(props.previewText)}
               >
-                {props.previewText}
+                <BidiMarkdownText text={props.previewText} />
               </p>
             ) : null}
           </div>
