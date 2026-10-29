@@ -1,5 +1,5 @@
 import { type RuntimeRequestId, type ScopedThreadRef } from "@t3tools/contracts";
-import { textDirection } from "~/textDirection";
+import { markdownProseDirection, textDirection } from "~/textDirection";
 import { memo, use, useEffect, useEffectEvent, useRef, useState } from "react";
 import { BackgroundThreadContext } from "./backgroundThread";
 import { useStableCallback } from "~/hooks/useStableCallback";
@@ -178,7 +178,7 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
     return null;
   }
 
-  const promptDirection = textDirection(
+  const promptDirection = markdownProseDirection(
     prompt.questions
       .flatMap((question) => [
         question.header,
@@ -217,7 +217,7 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
               <ComposerBanner.Separator />
               <span
                 className={cn("min-w-0 flex-1 truncate text-secondary-label", questionTextAlign)}
-                dir={textDirection(activeQuestion.question)}
+                dir={markdownProseDirection(activeQuestion.question)}
               >
                 {activeQuestion.question}
               </span>

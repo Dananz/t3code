@@ -24,3 +24,10 @@ export function textDirection(text: string): TextDirection | undefined {
   if (rtlWords === ltrWords) return first;
   return rtlWords > ltrWords ? "rtl" : "ltr";
 }
+
+const MARKDOWN_CODE_OR_URL =
+  /(`{3,}|~{3,})[\s\S]*?(?:\1|$)|(`{1,2})(?!`)[\s\S]*?(?<!`)\2(?!`)|https?:\/\/\S+/g;
+
+export function markdownProseDirection(markdown: string): TextDirection | undefined {
+  return textDirection(markdown.replace(MARKDOWN_CODE_OR_URL, " "));
+}

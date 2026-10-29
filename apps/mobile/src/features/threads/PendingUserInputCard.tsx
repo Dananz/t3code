@@ -2,7 +2,11 @@ import { Button } from "../../components/ui/Button";
 import { QuestionAttachments } from "./QuestionAttachments";
 import type { EnvironmentId, RuntimeRequestId } from "@t3tools/contracts";
 import type { ThreadUserInputQuestion } from "@t3tools/client-runtime/state/thread-requests";
-import { textDirection, type TextDirection } from "@t3tools/shared/textDirection";
+import {
+  markdownProseDirection,
+  textDirection,
+  type TextDirection,
+} from "@t3tools/shared/textDirection";
 import { useRef } from "react";
 import { Platform, Pressable, ScrollView, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
@@ -82,7 +86,7 @@ function QuestionText(props: {
     <SelectableMarkdownText
       markdown={markdown}
       textStyle={styles.nativeTextStyle}
-      writingDirection={textDirection(markdown)}
+      writingDirection={markdownProseDirection(markdown)}
       textAlign={props.setDirection === "rtl" ? "right" : "left"}
       onLinkPress={(href) => void openLink(href)}
     />
@@ -94,7 +98,7 @@ export function PendingUserInputCard(props: PendingUserInputCardProps) {
   const canRespond = props.pendingUserInput.responseCapability !== "not_resumable";
   const isResponding = props.respondingUserInputId === props.pendingUserInput.requestId;
   const responseDisabled = !canRespond || isResponding;
-  const setDirection = textDirection(
+  const setDirection = markdownProseDirection(
     props.pendingUserInput.questions
       .flatMap((question) => [
         question.header,
