@@ -23,14 +23,11 @@ function HighlightedSearchText(props: { text: string; ranges: ReadonlyArray<Sear
 /** Why a row matched when its title does not show it: the field and its match. */
 export function SearchMatchHintLine(props: { hint: SearchMatchHint }) {
   return (
-    <span
-      className="truncate text-xs text-muted-foreground/85"
-      dir={textDirection(props.hint.text)}
-    >
-      <span className="text-muted-foreground/70" dir="ltr">
-        {props.hint.label}:
-      </span>{" "}
-      <HighlightedSearchText text={props.hint.text} ranges={props.hint.ranges} />
+    <span className="flex min-w-0 items-baseline gap-1 text-xs text-muted-foreground/85" dir="ltr">
+      <span className="shrink-0 text-muted-foreground/70">{props.hint.label}:</span>
+      <span className="min-w-0 flex-1 truncate text-start" dir={textDirection(props.hint.text)}>
+        <HighlightedSearchText text={props.hint.text} ranges={props.hint.ranges} />
+      </span>
     </span>
   );
 }
@@ -44,17 +41,16 @@ export function ThreadSearchMatchExcerpt(props: {
 }) {
   const isUser = props.match.source === "user";
   return (
-    <span
-      className="truncate text-xs text-muted-foreground/85"
-      dir={textDirection(props.match.snippet)}
-    >
-      <span className={isUser ? "text-info-foreground" : "text-success-foreground"} dir="ltr">
+    <span className="flex min-w-0 items-baseline gap-1 text-xs text-muted-foreground/85" dir="ltr">
+      <span className={`shrink-0 ${isUser ? "text-info-foreground" : "text-success-foreground"}`}>
         {isUser ? "You:" : "Agent:"}
-      </span>{" "}
-      <HighlightedSearchText
-        text={props.match.snippet}
-        ranges={findSearchTokenRanges(props.match.snippet, props.match.query)}
-      />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-start" dir={textDirection(props.match.snippet)}>
+        <HighlightedSearchText
+          text={props.match.snippet}
+          ranges={findSearchTokenRanges(props.match.snippet, props.match.query)}
+        />
+      </span>
     </span>
   );
 }
