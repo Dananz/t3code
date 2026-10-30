@@ -1064,6 +1064,7 @@ public final class T3ComposerEditorView: ExpoView, UITextViewDelegate, UITextDro
     let font = UIFont(name: fontFamily, size: fontSize)
       ?? UIFont.systemFont(ofSize: fontSize)
     let paragraph = NSMutableParagraphStyle()
+    paragraph.alignment = .left
     paragraph.minimumLineHeight = lineHeight
     paragraph.maximumLineHeight = lineHeight
     return [
