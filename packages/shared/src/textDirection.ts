@@ -31,6 +31,73 @@ export function textDirection(text: string): TextDirection | undefined {
 
 const markdownParser = unified().use(remarkParse).freeze();
 
+function maskTextRanges(
+  text: string,
+  ranges: ReadonlyArray<{ start: number; end: number }>,
+  replacement = " ",
+) {
+  let offset = 0;
+  const parts: string[] = [];
+  for (const range of [...ranges].sort((a, b) => a.start - b.start)) {
+    const start = Math.max(offset, range.start);
+    const end = Math.min(text.length, range.end);
+    if (end <= start) continue;
+    parts.push(text.slice(offset, start), text.slice(start, end).replace(/[^\r\n]/g, replacement));
+    offset = end;
+  }
+  return parts.join("") + text.slice(offset);
+}
+
+/** Native paragraph ranges, using the desktop composer's prose-only word majority. */
+export function composerParagraphDirections(
+  text: string,
+  chips: ReadonlyArray<{ start: number; end: number }> = [],
+) {
+  // A chip is an atom, not indentation that could turn following prose into a code block.
+  const source = maskTextRanges(text, chips, "\ufffc");
+  const document = markdownParser.parse(source);
+  const code: Array<{ start: number; end: number }> = [];
+  const codeBlocks: Array<{ start: number; end: number }> = [];
+  const visit = (node: Root | RootContent): void => {
+    if (node.type === "code" || node.type === "inlineCode") {
+      const start = node.position?.start.offset;
+      const end = node.position?.end.offset;
+      if (start !== undefined && end !== undefined) {
+        code.push({ start, end });
+        if (node.type === "code") codeBlocks.push({ start, end });
+      }
+    } else if ("children" in node) node.children.forEach(visit);
+  };
+  visit(document);
+  const prose = maskTextRanges(source, code);
+  const groups = document.children.flatMap((node) => {
+    const start = node.position?.start.offset;
+    const end = node.position?.end.offset;
+    return (node.type === "list" || node.type === "blockquote") &&
+      start !== undefined &&
+      end !== undefined
+      ? [{ start, end, direction: textDirection(prose.slice(start, end)) }]
+      : [];
+  });
+  let previous: TextDirection | undefined;
+  const paragraphs: Array<{ start: number; end: number; direction: TextDirection }> = [];
+  for (const line of text.matchAll(/[^\r\n]*(?:\r\n|[\r\n]|$)/g)) {
+    const start = line.index;
+    const end = start + line[0].length;
+    if (start === end && text.length > 0 && !/[\r\n]$/.test(text)) continue;
+    if (codeBlocks.some((block) => start < block.end && end > block.start)) {
+      paragraphs.push({ start, end, direction: "ltr" });
+      continue;
+    }
+    const group = groups.find((block) => start < block.end && end > block.start);
+    const direction =
+      (group ? group.direction : textDirection(prose.slice(start, end))) ?? previous;
+    paragraphs.push({ start, end, direction: direction ?? "ltr" });
+    previous = direction;
+  }
+  return paragraphs;
+}
+
 export function markdownCodeParts(markdown: string) {
   const parts: Array<{ text: string; code: boolean; start: number }> = [];
   let offset = 0;
