@@ -91,6 +91,12 @@ it("reads only the visible preview prose without losing truncated code boundarie
 });
 
 it("seeds native paragraphs without changing Markdown block structure or code", () => {
+  expect(markdownWithDirection("[!NOTE]", "rtl")).toBe("\u200f[!NOTE]");
+  const rich =
+    "| Name | Value |\n| --- | --- |\n| React | עברית |\n\n- [ ] React שינוי\n\n> [!NOTE]\n> React עדכון\n\n$$\nx^2\n$$\n\nReact המשך";
+  expect(markdownWithDirection(rich, "rtl")).toBe(
+    "| Name | Value |\n| --- | --- |\n| React | עברית |\n\n- [ ] \u200fReact שינוי\n\n> [!NOTE]\n> \u200fReact עדכון\n\n$$\nx^2\n$$\n\n\u200fReact המשך",
+  );
   const markdown = "# React עדכון\n\n- React שינוי\n\n> English ציטוט\n\n```ts\nfoo()\n```";
   expect(markdownWithDirection(markdown, "rtl")).toBe(
     "# \u200fReact עדכון\n\n- \u200fReact שינוי\n\n> \u200fEnglish ציטוט\n\n```ts\nfoo()\n```",

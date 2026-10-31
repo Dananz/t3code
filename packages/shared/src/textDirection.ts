@@ -1,5 +1,7 @@
 import type { Root, RootContent } from "mdast";
 import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 import { unified } from "unified";
 
 export type TextDirection = "ltr" | "rtl";
@@ -32,6 +34,7 @@ export function textDirection(text: string): TextDirection | undefined {
 }
 
 const markdownParser = unified().use(remarkParse).freeze();
+const nativeMarkdownParser = unified().use(remarkParse).use(remarkGfm).use(remarkMath).freeze();
 
 function maskTextRanges(
   text: string,
@@ -165,14 +168,24 @@ export function markdownPreview(markdown: string, maxChars: number) {
 export function markdownWithDirection(markdown: string, direction: TextDirection | undefined) {
   if (!direction) return markdown;
   const offsets: number[] = [];
-  const visit = (node: Root | RootContent): void => {
+  const visit = (node: Root | RootContent, parent?: Root | RootContent): void => {
     if (node.type === "paragraph" || node.type === "heading") {
-      const offset = node.children[0]?.position?.start.offset;
-      if (offset !== undefined) offsets.push(offset);
+      let offset = node.children[0]?.position?.start.offset;
+      if (offset !== undefined) {
+        // Keep the native admonition marker at the start of its quote line.
+        const alert =
+          parent?.type === "blockquote" && parent.children[0] === node
+            ? /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][\t ]*(?:\r?\n[\t ]*(?:>[\t ]*)*|$)/i.exec(
+                markdown.slice(offset, node.position?.end.offset),
+              )
+            : null;
+        if (alert) offset += alert[0].length;
+        if (offset < (node.position?.end.offset ?? markdown.length)) offsets.push(offset);
+      }
     }
-    if ("children" in node) node.children.forEach(visit);
+    if ("children" in node) node.children.forEach((child) => visit(child, node));
   };
-  visit(markdownParser.parse(markdown));
+  visit(nativeMarkdownParser.parse(markdown));
   const mark = direction === "rtl" ? "\u200f" : "\u200e";
   for (const offset of offsets.reverse()) {
     markdown = markdown.slice(0, offset) + mark + markdown.slice(offset);
