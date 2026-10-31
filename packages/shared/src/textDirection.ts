@@ -8,6 +8,7 @@ export type TextDirection = "ltr" | "rtl";
 // supplementary right-to-left blocks.
 const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿\u{10800}-\u{10FFF}\u{1E800}-\u{1EFFF}]/u;
 const LETTER = /\p{L}/u;
+const HTTP_URL = /https?:\/\/\S+/g;
 
 /**
  * `dir="auto"` misreads Arabic prose that opens with an English term.
@@ -70,7 +71,11 @@ export function composerParagraphDirections(
     } else if ("children" in node) node.children.forEach(visit);
   };
   visit(document);
-  const prose = maskTextRanges(source, code);
+  const urls = Array.from(source.matchAll(HTTP_URL), (match) => ({
+    start: match.index,
+    end: match.index + match[0].length,
+  }));
+  const prose = maskTextRanges(source, [...code, ...urls]);
   const groups = document.children.flatMap((node) => {
     const start = node.position?.start.offset;
     const end = node.position?.end.offset;
@@ -128,7 +133,7 @@ function proseDirection(parts: ReadonlyArray<{ text: string; code: boolean }>) {
     .filter((part) => !part.code)
     .map((part) => part.text)
     .join(" ");
-  return textDirection(prose.replace(/https?:\/\/\S+/g, " "));
+  return textDirection(prose.replace(HTTP_URL, " "));
 }
 
 export function markdownProseDirection(...fields: ReadonlyArray<string>) {

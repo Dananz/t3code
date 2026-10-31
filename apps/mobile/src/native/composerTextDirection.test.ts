@@ -44,6 +44,12 @@ describe("composerParagraphDirections", () => {
   });
 
   it("uses native UTF-16 offsets and includes the trailing empty paragraph", () => {
+    const urlDraft = "https://github.com/foo/bar שלום\nEnglish https://example.com\n";
+    expect(composerParagraphDirections(urlDraft)).toEqual([
+      { start: 0, end: urlDraft.indexOf("\n") + 1, direction: "rtl" },
+      { start: urlDraft.indexOf("\n") + 1, end: urlDraft.length, direction: "ltr" },
+      { start: urlDraft.length, end: urlDraft.length, direction: "ltr" },
+    ]);
     expect(composerParagraphDirections("😀 שלום\r\nEnglish\n")).toEqual([
       { start: 0, end: 9, direction: "rtl" },
       { start: 9, end: 17, direction: "ltr" },
