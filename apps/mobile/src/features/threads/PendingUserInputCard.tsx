@@ -87,7 +87,10 @@ function QuestionText(props: {
       markdown={markdown}
       textStyle={styles.nativeTextStyle}
       writingDirection={markdownProseDirection(markdown)}
-      textAlign={props.setDirection === "rtl" ? "right" : "left"}
+      // Android's renderer aligns relative to each paragraph's direction.
+      textAlign={
+        Platform.OS === "android" ? undefined : props.setDirection === "rtl" ? "right" : "left"
+      }
       onLinkPress={(href) => void openLink(href)}
     />
   );
